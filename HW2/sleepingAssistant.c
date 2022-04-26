@@ -67,7 +67,7 @@ void *taWork() {
         printf("ta is waked up\n");
         while (chair_count != 0) {
             pthread_mutex_lock(&check_available);
-            printf("helping student on seat %d\n", chair_count);
+            printf("helping student\n");
             chair_count--;
             pthread_mutex_unlock(&check_available);
             sleepRandomTime();
