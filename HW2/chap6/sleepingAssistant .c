@@ -28,12 +28,13 @@ int main() {
     sem_init(&taTeaching, 0, 0);
     pthread_create(&ta, NULL, taWork, NULL);
     for (int i = 0; i < STUDENT_AMOUNT; i++) {
-        pthread_create(&students[i], NULL, studentWork, studentsId[i]);
+        pthread_create(&students[i], NULL, studentWork, (void*)&studentsId[i]);
     }
     pthread_join(ta, NULL);
     for (int i = 0; i < STUDENT_AMOUNT; i++) {
         pthread_join(students[i], NULL);
     }
+    printf("section complete\n");
 }
 
 void *studentWork(void *arg) {
@@ -43,18 +44,20 @@ void *studentWork(void *arg) {
         pthread_mutex_lock(&check_available);
 
         if (chair_count < 3) {
-            chair_count++;
+            if (chair_count == 0) {
+            	 chair_count++;
+                sem_post(&taWakeUp);
+            } else {
+            	 chair_count++;
+            }
             printf("student %d waiting on seat %d\n", *studentId, chair_count);
             pthread_mutex_unlock(&check_available);
-            if (chair_count == 0) {
-                sem_post(&taWakeUp);
-            }
             sem_wait(&taTeaching);
-            printf("Student %d Leaving\n", studentId);
+            printf("Student %d Leaving\n", *studentId);
             pthread_exit(0);
         } else {
             pthread_mutex_unlock(&check_available);
-            printf("Student %d coming back later\n");
+            printf("Student %d coming back later\n", *studentId);
             sleepRandomTime();
         }
     }
